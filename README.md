@@ -107,6 +107,13 @@ check, so the exposure window is the full cycle, not just the supplier's lead ti
 Power BI Desktop, DAX, Power Query. Source data is a synthetic logistics dataset — no
 real company or customer data.
 
+## Related
+
+[**Diamonds-Pricing-Case-Study.md**](Diamonds-Pricing-Case-Study.md) — a shorter,
+narrative case study on the general process this report follows: frame a question,
+build the data model, compute a statistic, catch the confound that makes the naive
+version of it wrong, then turn the corrected version into a specific action.
+
 ## What I'd do differently
 
 *(fill this in yourself — it's the part interviewers actually ask about)*
