@@ -1,24 +1,36 @@
 # Stockroom Analytics — Power BI Warehouse Diagnostic
 
-A 5-page Power BI report diagnosing three systemic failures in a synthetic warehouse
-operation of 3,204 SKUs: stockouts driven by mis-set reorder points, capital tied up
-in overstock, and a warehouse layout with no demand-based slotting logic.
+A 5-page Power BI diagnostic exploring stock availability, inventory-cost scenarios
+and picking performance across a synthetic snapshot of 3,204 SKUs. The findings
+identify questions to investigate; they do not establish root causes or demonstrate
+implemented operational improvements or financial savings.
 
 **[Download the exported PDF](Stockroom%20Analytics.pdf)** if you don't have Power BI
 Desktop installed — every page renders statically there. The live `.pbix` supports the
 slicers and cross-filtering the PDF can't.
 
-## The business problem
+## Findings to investigate and model scenarios
 
-- **Stockouts:** 90.8% of SKUs recorded at least one stockout last month, and 97.0% of
-  SKUs sit below the reorder point a 95%-service-level policy would recommend.
-- **Overstock:** £881.5K/day in total holding cost, of which 31.0% (£273K/day) is tied
-  up in excess stock beyond target levels — £37.6K/day (£13.7M annualised) of that is
-  on slow-moving items safe to cut without stockout risk.
-- **Slotting:** Average pick time is ~95.6 seconds and statistically flat across all
-  four warehouse zones and across the full popularity range (item popularity vs. pick
-  time correlation: +0.01 — no relationship). High-demand items are not placed any
-  closer to pick stations than low-demand items.
+- **Stock availability:** 90.8% of SKUs have a recorded stockout in the supplied
+  snapshot. About 97.0% fall below an illustrative replenishment target using a
+  95% cycle-service-level assumption. This flags policy assumptions for review;
+  it does not establish that the current thresholds caused stockouts.
+- **Inventory-cost scenario:** Synthetic daily holding-cost inputs produce a total
+  of £881.5K/day. Under the report's assumptions, 31.0% (£273K/day) is associated
+  with stock above model targets. A slow-moving subset accounts for £37.6K/day
+  (£13.7M when annualised). These are model calculations, not validated savings
+  or realistic business cost estimates. The historical `Safe_To_Cut` label marks
+  review candidates; it does not establish that reductions are safe or risk-free.
+  Validate cost units, demand variation, lead times and service levels before
+  recommending inventory changes.
+- **Picking performance:** Average pick time is approximately 95.6 seconds.
+  Popularity and pick time have a near-zero linear correlation (+0.01).
+  This does not establish a layout problem or show how far items are from pick
+  stations. Investigate pick-path distance, order-line frequency and congestion
+  before proposing slotting changes.
+
+The original report and export retain their historical labels. Read them alongside
+these limitations and the [portfolio case study](https://chigozie-nkwopara.netlify.app/warehouse-case-study).
 
 ## Data model
 
@@ -49,9 +61,10 @@ which is what lets the report slice by zone or by individual location bay.
    Holding Cost, Avg Pick Time) with Category/Zone slicers.
 2. **Zone 1 — Stockouts** — implied service-level distribution
    (`Service_Level_Band`), four Pearson-correlation cards, and a table of the
-   worst-undersized SKUs sorted by reorder-point deficit.
-3. **Zone 2 — Overstock** — excess holding cost by category, and a savings roadmap
-   (`Safe_To_Cut`) filtered to items that can be cut with no stockout risk.
+   SKUs with the largest gap below the illustrated replenishment target.
+3. **Zone 2 — Overstock** — modelled excess holding cost by category and a
+   scenario filter (`Safe_To_Cut`) identifying candidates for further review,
+   subject to demand, service-level and stockout-risk validation.
 4. **Zone 3 — Slotting** — pick time and top-20%-velocity placement by zone (both
    flat, which is the finding), plus a popularity-vs-pick-time scatter with trend
    line.
@@ -82,14 +95,18 @@ confirm the DAX evaluates correctly:
 | `Corr Stockouts vs ROP` | +0.03 |
 | `Corr Popularity vs Pick Time` | +0.01 |
 
-All four sit within noise of zero — reorder points aren't being set in response to
-demand variability, stockouts aren't concentrated in slow-replenishment items any more
-than fast ones, and picking efficiency has no relationship to how popular an item is.
-That last point is the core evidence for the slotting finding above.
+These coefficients show little linear association between the selected variables
+in this snapshot. They do not establish how policies were set, what caused
+stockouts, or whether layout changes would improve picking. Transaction history
+and operational measurements are needed to test those hypotheses.
 
-## Recommended reorder point formula
+## Illustrative periodic-review target
 
-Periodic-review, 95% cycle service level (z = 1.645):
+The report's `Recommended_ROP` measure represents an illustrative order-up-to
+target for periodic review, rather than a universal reorder trigger. It assumes
+stable lead times and independent daily demand variation, with a 95% cycle
+service level (z = 1.645). An order quantity would also need inventory on order,
+backorders and purchasing constraints:
 
 ```DAX
 Recommended_ROP =
