@@ -109,4 +109,8 @@ real company or customer data.
 
 ## What I'd do differently
 
-*(fill this in yourself — it's the part interviewers actually ask about)*
+This is a diagnostic of a single synthetic inventory snapshot. I would use transaction-level history to measure demand variability and test the replenishment policy over time, incorporating supplier lead-time variation into the safety-stock calculation.
+
+Before recommending inventory reductions, I would segment SKUs by demand and value, test several service levels, and estimate both stockout risk and carrying-cost changes. The report's 'safe to cut' label is a model scenario, not a validated operational saving.
+
+For slotting, a near-zero correlation does not establish that the warehouse layout causes slow picks. I would collect order-line frequency, pick paths, travel distance and congestion by location, then compare a proposed layout against measured travel time before rollout.
